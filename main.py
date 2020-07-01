@@ -7,31 +7,38 @@
 import wave
 import math
 import numpy as np
+import random
+from collections import deque
+
+
+# generate a note of a given frequency with Karplus-Strong algorithm
+def generateNote(freq):
+    nSamples = 44100
+    sampleRate = 44100
+    length = int(sampleRate / freq)
+
+    # initialize the ring buffer with random values between -0.5 and 0.5
+    ringBuffer = deque([random.random() - 0.5 for i in range(length)])
+
+    # initialize the samples buffer
+    samplesBuffer = np.array([0]*nSamples, 'float32')
+
+    for i in range(nSamples):
+        # first element in the ring buffer is copied to the samples buffer
+        samplesBuffer[i] = ringBuffer[0]
+
+        # Apply the attenuation and calculate the average
+        average = 0.996*0.5*(ringBuffer[0] + ringBuffer[1])
+        ringBuffer.append(average)
+        ringBuffer.popleft()
+
+    # convert the samples to 16-bit values
+    samples = np.array(samplesBuffer*32767, 'int16')
+    return samples.tobytes()
 
 
 def main():
-    sRate = 44100
-    nSamples = sRate * 5
-
-    # create an array of amplitude values
-    x = np.arange(nSamples)/float(sRate)
-    vals = np.sin(2.0 * math.pi * 220.0 * x)
-
-    # Scale the sine wave values to 16-bit values
-    data = np.array(vals*32767, 'int16').tobytes()
-
-    file = wave.open('sine220.wav', 'wb')
-
-    # PARAMS
-    # 1 = Mono
-    # 2 = 2-byte (16-bit)
-    # sRate = Sampling rate
-    # nSamples = length in seconds of .wav file
-    # uncompressed = uncompressed format
-    file.setparams((1, 2, sRate, nSamples, 'NONE', 'uncompressed'))
-
-    file.writeframes(data)
-    file.close()
+    holder = generateNote(100)
 
 
 if __name__ == '__main__':
