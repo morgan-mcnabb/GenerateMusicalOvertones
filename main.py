@@ -11,8 +11,28 @@ import random
 from collections import deque
 
 
+def WriteWAV(fileName, soundData):
+
+    # open the file
+    file = wave.open(fileName, 'wb')
+
+    # channel 1 = MONO
+    nChannels = 1
+
+    # 2 = 2 bytes (16-bit)
+    sampleWidth = 2
+
+    frameRate = 44100
+    nFrames = 44100
+
+    file.setparams((nChannels, sampleWidth, frameRate, nFrames, 'NONE', 'noncompressed'))
+
+    file.writeframes(soundData)
+    file.close()
+
+
 # generate a note of a given frequency with Karplus-Strong algorithm
-def generateNote(freq):
+def GenerateNote(freq):
     nSamples = 44100
     sampleRate = 44100
     length = int(sampleRate / freq)
@@ -38,7 +58,7 @@ def generateNote(freq):
 
 
 def main():
-    holder = generateNote(100)
+    holder = GenerateNote(100)
 
 
 if __name__ == '__main__':
